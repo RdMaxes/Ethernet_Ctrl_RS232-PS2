@@ -33,6 +33,13 @@ int main(void)
 	Usart2_Init(115200);
 	Myprintf_Init(0x00,myputc);
 
+	//initial test
+	while(1)
+	{
+		GREEN_ON(); delay(80000*20); GREEN_OFF(); delay(80000*20); 
+		RED_ON(); delay(80000*20); RED_OFF(); delay(80000*20); 
+	}
+
  	while(tapdev_init())	//ENC28J60 
 	{								   
 		my_printf("\r\nENC28J60 Init Error!");	 
