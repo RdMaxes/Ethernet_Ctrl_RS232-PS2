@@ -5,6 +5,7 @@
 //TCP application
 //Called by uIP via UIP_APPCALL
 //provide TCP and http serice
+
 void tcp_demo_appcall(void)
 {	
   	
@@ -21,7 +22,7 @@ void tcp_demo_appcall(void)
 	}		    
 	switch(uip_conn->rport)	//remote port mission, port:1400
 	{
-	    case HTONS(1400):
+	    case HTONS(1800):
 			tcp_client_demo_appcall();
 	       break;
 	    default: 

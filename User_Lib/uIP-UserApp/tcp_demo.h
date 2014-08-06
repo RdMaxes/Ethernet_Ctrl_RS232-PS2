@@ -36,6 +36,7 @@ void tcp_server_demo_appcall(void);
 /////////////////////////////////////TCP SERVER/////////////////////////////////////
 extern uint8_t tcp_server_databuf[];   		//buffer for Tx data 
 extern uint8_t tcp_server_sta;			    //server status
+extern uint8_t serverip[4];					//remote server ip
 //tcp server º¯Êý
 void tcp_server_aborted(void);
 void tcp_server_timedout(void);

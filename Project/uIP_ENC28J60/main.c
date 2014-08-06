@@ -19,6 +19,7 @@ uint8_t SerialDataCheck(void); //check serial data
 void Switch2ConnectMode(void); //mode switch
 void Switch2DisconnectMode(void);
 uint8_t GetIPv4Information(char* ptrBuf, uint8_t* ptrIP1,uint8_t* ptrIP2,uint8_t* ptrIP3,uint8_t* ptrIP4);
+uint8_t GetMonitorPortInformation(char* cmd_buf, uint16_t* monport);
 
 //General Command Lines
 uint8_t str_POFF[] = "POFF";
@@ -29,8 +30,6 @@ uint8_t str_SETDIP[] = "SETDIP";
 uint8_t str_SETHIP[] = "SETHIP";
 uint8_t str_SETGWAY[] = "SETGWAY";
 uint8_t str_SETMASK[] = "SETMASK";
-uint8_t str_SETCPORT[] = "SETCPORT";
-uint8_t str_SETSPORT[] = "SETSPORT";
 //Echo Command Lines
 uint8_t str_ECHODIP[] = "ECHODIP";
 uint8_t str_ECHOHIP[] = "ECHOHIP";
@@ -38,7 +37,7 @@ uint8_t str_ECHOGWAY[] = "ECHOGWAY";
 uint8_t str_ECHOMASK[] = "ECHOMASK";
 uint8_t str_ECHOCPORT[] = "ECHOCPORT";
 uint8_t str_ECHOSPORT[] = "ECHOSPORT";
-const uint8_t sudomymac[6]={0x04,0x02,0x35,0x00,0x00,0x01};	
+const uint8_t sudomymac[6]={0x04,0x02,0x35,0x00,0x00,0x01};	//local MAC address
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])	
 uint8_t CONNECTION_STATUS = 1; // 0 = disconnect, 1 = connect
 #define CONNECT_MODE 1
@@ -51,14 +50,12 @@ uint8_t CONNECTION_STATUS = 1; // 0 = disconnect, 1 = connect
 #define CMD_SETHIP		5
 #define CMD_SETGWAY		6	
 #define CMD_SETMASK		7
-#define CMD_SETCPORT	8	
-#define CMD_SETSPORT	9
-#define CMD_ECHODIP		10
-#define CMD_ECHOHIP		11
-#define CMD_ECHOGWAY	12
-#define CMD_ECHOMASK	13
-#define CMD_ECHOCPORT	14
-#define CMD_ECHOSPORT	15
+#define CMD_ECHODIP		8
+#define CMD_ECHOHIP		9
+#define CMD_ECHOGWAY	10
+#define CMD_ECHOMASK	11
+#define CMD_ECHOCPORT	12
+#define CMD_ECHOSPORT	13
 
 static void delay(uint32_t delay_count)
 {
@@ -74,27 +71,17 @@ int main(void)
  	uint32_t ClinetRxCnt = 0; //client packet rx counter 
  	uint8_t CMD = 0;
  	uint16_t i=0;
-	//============================TEST Variables==================================
- 	char DIP_buf[] = "SETDIP=192.168.200.5";
- 	char HIP_buf[] = "SETHIP=192.168.200.28";
- 	char GWAY_buf[] = "SETGWAY=192.168.200.1";
- 	char MASK_buf[] = "SETMASK=255.255.255.0";	
-
  	uint8_t IP1,IP2,IP3,IP4;
+	//============================TEST Variables==================================
+
 	//=========================END of TEST Variables==============================	
 	LED_Init();
-	Usart2_Init(9600);
+	Usart2_Init(38400);
 	Myprintf_Init(0x00,myputc);
 	SN74CBT3306_Init();
 	//============================TEST============================================
-	if(GetIPv4Information(DIP_buf,&IP1,&IP2,&IP3,&IP4))	my_printf("\r\nCommand Line Error.");
-	my_printf("\r\nDevice IP=%d.%d.%d.%d",IP1,IP2,IP3,IP4);
-	if(GetIPv4Information(HIP_buf,&IP1,&IP2,&IP3,&IP4))	my_printf("\r\nCommand Line Error.");
-	my_printf("\r\nHost IP=%d.%d.%d.%d",IP1,IP2,IP3,IP4);
-	if(GetIPv4Information(GWAY_buf,&IP1,&IP2,&IP3,&IP4))	my_printf("\r\nCommand Line Error.");
-	my_printf("\r\nGateway=%d.%d.%d.%d",IP1,IP2,IP3,IP4);
-	if(GetIPv4Information(MASK_buf,&IP1,&IP2,&IP3,&IP4))	my_printf("\r\nCommand Line Error.");
-	my_printf("\r\nIP Mask=%d.%d.%d.%d",IP1,IP2,IP3,IP4);
+	//if(GetIPv4Information(DIP_buf,&IP1,&IP2,&IP3,&IP4))	my_printf("\r\nCommand Line Error.");
+	//my_printf("\r\nDevice IP=%d.%d.%d.%d",IP1,IP2,IP3,IP4);
 	//============================END of TEST=====================================	
 
  	while(tapdev_init())	//ENC28J60 
@@ -129,7 +116,7 @@ int main(void)
 				if(CMD==CMD_POFF)	//only accept POFF command here
 				{
 					Switch2DisconnectMode();  delay(8000*10);
-					my_printf("POFF"); 	delay(8000*10);	
+					my_printf("\r\nPOFF"); 	delay(8000*10);	
 				}
 			}
 			else //in disconnect mode
@@ -139,7 +126,7 @@ int main(void)
 					//General Command Lines
 					case CMD_POFF:
 						Switch2DisconnectMode(); delay(8000*10);
-						my_printf("POFF"); delay(8000*10);
+						my_printf("\r\nPOFF"); delay(8000*10);
 						break;
 					case CMD_PON:
 						my_printf("\r\nPON"); delay(8000*10);
@@ -151,16 +138,31 @@ int main(void)
 						break;	
 					//IP Setup Command Lines
 					case CMD_SETDIP:
+						if(GetIPv4Information((char*)USART2_RX_BUF,&IP1,&IP2,&IP3,&IP4)) break; //data error
+						uip_ipaddr(ipaddr, IP1,IP2,IP3,IP4);	//setup local IP
+						uip_sethostaddr(ipaddr);	
+						my_printf("\r\nDevice IP Set:%d.%d.%d.%d",IP1,IP2,IP3,IP4);
 						break;
 					case CMD_SETHIP:
+						if(GetIPv4Information((char*)USART2_RX_BUF,&IP1,&IP2,&IP3,&IP4)) break; //data error
+						serverip[0] = IP1;
+						serverip[1] = IP2;
+						serverip[2] = IP3;
+						serverip[3] = IP4;
+						tcp_client_reconnect(); 
+						my_printf("\r\nHost IP Set:%d.%d.%d.%d",IP1,IP2,IP3,IP4);
 						break;
 					case CMD_SETGWAY:
+						if(GetIPv4Information((char*)USART2_RX_BUF,&IP1,&IP2,&IP3,&IP4)) break; //data error
+						uip_ipaddr(ipaddr, IP1,IP2,IP3,IP4); 	//setup Gateway
+						uip_setdraddr(ipaddr);	
+						my_printf("\r\nGateway Set:%d.%d.%d.%d",IP1,IP2,IP3,IP4);
 						break;
 					case CMD_SETMASK:
-						break;
-					case CMD_SETCPORT:
-						break;
-					case CMD_SETSPORT:
+						if(GetIPv4Information((char*)USART2_RX_BUF,&IP1,&IP2,&IP3,&IP4)) break; //data error
+						uip_ipaddr(ipaddr, IP1,IP2,IP3,IP4);	//setup Mask
+						uip_setnetmask(ipaddr);
+						my_printf("\r\nIP Mask Set:%d.%d.%d.%d",IP1,IP2,IP3,IP4);
 						break;
 					//Echo Command Lines		
 				}		
@@ -347,8 +349,6 @@ uint8_t SerialDataCheck(void)
 		else if(strncmp((const char *)str_SETHIP,(const char *)USART2_RX_BUF,6)==0)	 	 res=CMD_SETHIP;
 		else if(strncmp((const char *)str_SETGWAY,(const char *)USART2_RX_BUF,7)==0)	 res=CMD_SETGWAY;
 		else if(strncmp((const char *)str_SETMASK,(const char *)USART2_RX_BUF,7)==0)	 res=CMD_SETMASK;
-		else if(strncmp((const char *)str_SETCPORT,(const char *)USART2_RX_BUF,8)==0)	 res=CMD_SETCPORT;
-		else if(strncmp((const char *)str_SETSPORT,(const char *)USART2_RX_BUF,8)==0)	 res=CMD_SETSPORT;
 		//Echo Command Lines
 		else if(strncmp((const char *)str_ECHODIP,(const char *)USART2_RX_BUF,7)==0)	 res=CMD_ECHODIP;
 		else if(strncmp((const char *)str_ECHOHIP,(const char *)USART2_RX_BUF,7)==0)	 res=CMD_ECHOHIP;
@@ -399,6 +399,7 @@ uint8_t GetIPv4Information(char* cmd_buf, uint8_t* ptrIP1,uint8_t* ptrIP2,uint8_
 			ptrBuf++;
 		}
 	}
+	if (dot_counter<3) return 1; //data corrupt
 	tempip1 = atoi(ip_temp[0]); 
 	tempip2 = atoi(ip_temp[1]); 
 	tempip3 = atoi(ip_temp[2]); 
@@ -408,6 +409,36 @@ uint8_t GetIPv4Information(char* cmd_buf, uint8_t* ptrIP1,uint8_t* ptrIP2,uint8_
 	*ptrIP2 = tempip2;
 	*ptrIP3 = tempip3;
 	*ptrIP4 = tempip4;	
+	return 0;
+}
 
+//get the monitored target port from command buffer
+//cmd_buf: command buffer
+//monport: monitored port
+//return: 1 = command error, 0 = success
+uint8_t GetMonitorPortInformation(char* cmd_buf, uint16_t* monport)
+{
+	char str_Port[4] = "";
+ 	char* ptrBuf = 0x00;
+ 	uint8_t offset = 0;
+ 	uint8_t digit_counter = 0;
+ 	uint16_t temp_port = 0;
+
+	ptrBuf = cmd_buf;
+	while(*ptrBuf!='=')
+	{
+		offset++; ptrBuf++;
+		if(offset>=USART2_MAX_RECV_LEN) return 1; //command error
+	}
+	ptrBuf++; //point to first digit of port number
+	while(*ptrBuf!='\0')
+	{
+		str_Port[digit_counter] = *ptrBuf;
+		ptrBuf++;
+		digit_counter++;
+	}
+	temp_port = atoi(str_Port);
+	if ((temp_port>9999)||(temp_port<1)) return 1; //data corrupt, port number is 1~9999
+	*monport = temp_port;
 	return 0;
 }
