@@ -49,11 +49,11 @@ void tcp_client_demo_appcall(void)
 }
 
 //reconnet to server
-//server IP is set into 192.168.1.103, port = 1400
+//server IP is set into 192.168.1.2, port = 1400
 void tcp_client_reconnect()
 {
 	uip_ipaddr_t ipaddr;
-	uip_ipaddr(&ipaddr,192,168,200,3);	
+	uip_ipaddr(&ipaddr,192,168,1,2);	
 	uip_connect(&ipaddr,htons(1400)); 	
 }
 

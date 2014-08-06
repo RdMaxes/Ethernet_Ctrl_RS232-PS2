@@ -1,12 +1,20 @@
 #include "usart2.h"
 
+void TIM2_IRQHandler(void);
+void USART2_IRQHandler(void);
+void TIM2_Set(u8 sta);
+void TIM2_Init(u16 arr,u16 psc);
+
+uint8_t USART2_RX_BUF[USART2_MAX_RECV_LEN]; 				
+uint16_t USART2_RX_STA=0;  
+
 //setup usart2
 //baudrate: assigned baudrate
 void Usart2_Init(uint32_t baudrate)
 {
 	GPIO_InitTypeDef GPIO_InitStructure; 
 	USART_InitTypeDef USART_InitStructure;
-//	NVIC_InitTypeDef NVIC_InitStructure; 
+	NVIC_InitTypeDef NVIC_InitStructure; 
 
   	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2,ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
@@ -34,20 +42,78 @@ void Usart2_Init(uint32_t baudrate)
 
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);	    	
 	/* Enable the USART2 Interrupt */																																												
-//	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;																																												
-//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;																																												
-//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;																																												
-//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;																																												
-//	NVIC_Init(&NVIC_InitStructure);		
+	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;																																												
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;																																												
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;																																												
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;																																												
+	NVIC_Init(&NVIC_InitStructure);	
+
+	TIM2_Init(99,7199);		//set 10ms interrupt
+	USART2_RX_STA=0;		//reset counter
+	TIM2_Set(0);			//disable timer	
 }
 
 //usart2 interrupt function
 void USART2_IRQHandler(void)
 {
-	u8 res;	    
+	uint8_t res;	    
 	if(USART2->SR&(1<<5))//if rx data
 	{	 
-		res=USART2->DR; 	
-		res = res+1; //dummy code		 
+		res=USART2->DR; 			 
+		if(USART2_RX_STA<USART2_MAX_RECV_LEN)	//can get more data	
+		{
+			TIM2->CNT=0;	//reset timer counter       					
+			if(USART2_RX_STA==0)TIM2_Set(1);	//start timer counter	 
+			USART2_RX_BUF[USART2_RX_STA++]=res;	//put data into buffer
+		}else 
+		{
+			USART2_RX_STA|=1<<15;	//set data receive complete flag					
+		} 		 
 	}  											 
 }  
+
+//­timer2 interrupt function	    
+void TIM2_IRQHandler(void)
+{ 	
+	if(TIM2->SR&0X01)
+	{	 			   
+		USART2_RX_STA|=1<<15;	//set usart2 rx complete flag
+		TIM2->SR&=~(1<<0);				   
+		TIM2_Set(0);			//disable timer 
+	}	    
+}
+
+//Enable/Disable timer2
+void TIM2_Set(u8 sta)
+{
+	if(sta)
+	{
+    	TIM2->CNT=0;         
+		TIM2->CR1|=1<<0;     
+	}else TIM2->CR1&=~(1<<0);	   
+}
+
+//setup timer2	 
+void TIM2_Init(u16 arr,u16 psc)
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	//Enable the Clock
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
+	//Timer Setting 
+    TIM_TimeBaseStructure.TIM_Period =arr;			
+  	TIM_TimeBaseStructure.TIM_Prescaler = psc;		
+  	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+  	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+  	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+	TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+ 	TIM_ARRPreloadConfig(TIM2, DISABLE);
+ 	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+	TIM_Cmd(TIM2, ENABLE);
+	/* Enable the TIM2 Interrupt */
+    NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);									 
+}

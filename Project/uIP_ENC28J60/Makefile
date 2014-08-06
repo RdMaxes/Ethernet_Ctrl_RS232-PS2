@@ -38,6 +38,7 @@ USER_LIB=../../User_Lib
 SRC+=	./main.c \
 		$(HARDWARE)/LED/led.c \
 		$(HARDWARE)/ENC28J60/enc28j60.c \
+		$(HARDWARE)/SN74CBT3306/sn74cbt3306.c \
 		$(PERIPHERAL)/spi2/spi2.c \
 		$(PERIPHERAL)/timer6/timer6.c \
 		$(PERIPHERAL)/usart2/usart2.c \
@@ -64,6 +65,7 @@ SRC+=	./main.c \
 CFLAGS_INCLUDE+=-I./ \
 		-I$(HARDWARE)/LED \
 		-I$(HARDWARE)/ENC28J60 \
+		-I$(HARDWARE)/SN74CBT3306 \
 		-I$(PERIPHERAL)/spi2 \
 		-I$(PERIPHERAL)/timer6 \
 		-I$(PERIPHERAL)/usart2 \
@@ -80,7 +82,7 @@ CFLAGS_DEFINE= \
 		-D STM32F10X_HD \
 #__CC_ARM
 CFLAGS_OPTIMIZE= \
-		-O2
+		-O
 CFLAGS_NEW_LIB_NANO= \
 		--specs=nano.specs --specs=nosys.specs -u _printf_float
 #warning

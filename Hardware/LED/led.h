@@ -8,7 +8,7 @@
 #define LED1_Port		GPIOA
 #define LED1_CLK		RCC_APB2Periph_GPIOA
 #define LED1_Pin		GPIO_Pin_11
-#define GREEN_ON();		GPIO_SetBits( LED1_Port, LED1_Pin ); GPIO_SetBits 
+#define GREEN_ON();		GPIO_SetBits( LED1_Port, LED1_Pin );  
 #define GREEN_OFF();	GPIO_ResetBits( LED1_Port, LED1_Pin );
 
 /*LED2 Pin Definition*/
