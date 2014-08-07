@@ -1,6 +1,7 @@
 #include "uip.h"	    
 #include "enc28j60.h"
 #include "tcp_demo.h"
+#include "myprintf.h"
 
 //TCP application
 //Called by uIP via UIP_APPCALL
@@ -20,7 +21,7 @@ void tcp_demo_appcall(void)
 		default:						  
 		    break;
 	}		    
-	switch(uip_conn->rport)	//remote port mission, port:1400
+	switch(uip_conn->rport)	//remote port mission, port:1800
 	{
 	    case HTONS(1800):
 			tcp_client_demo_appcall();
@@ -33,6 +34,7 @@ void tcp_demo_appcall(void)
 void uip_log(char *m)
 {			    
 	//printf("uIP log:%s\r\n",m);
+	my_printf("uIP log:%s\r\n",m);
 }
 
 

@@ -5,7 +5,7 @@
 #include "usart2.h"
 #include "myprintf.h"
 #include "enc28j60.h"
-#include "timer6.h"
+#include "timer4.h"
 #include "uip.h"
 #include "tapdev.h"
 #include "timer.h" //it is timer.h of uIP Lib
@@ -68,7 +68,6 @@ int main(void)
 	u8 tcp_server_tsta=0XFF;
 	u8 tcp_client_tsta=0XFF;
  	uip_ipaddr_t ipaddr;
- 	uint32_t ClinetRxCnt = 0; //client packet rx counter 
  	uint8_t CMD = 0;
  	uint16_t i=0;
  	uint8_t IP1,IP2,IP3,IP4;
@@ -179,20 +178,19 @@ int main(void)
 			//else my_printf("\r\nTCP Server Disconnected");
  			if(tcp_server_sta&(1<<6))	//Rx new data
 			{
-    //			my_printf("TCP Server RX:%s\r\n",tcp_server_databuf); //print out Rx data
+    			my_printf("TCP Server RX:%s\r\n",tcp_server_databuf); //print out Rx data
 				tcp_server_sta&=~(1<<6);		//clear Rx data ready flag	
 				//echo back to remote PC directly
-				tcp_client_sta|=1<<5;
+				tcp_server_sta|=1<<5;
 			}
 			tcp_server_tsta=tcp_server_sta; //update current server status
 		}
 		if(tcp_client_tsta!=tcp_client_sta)//TCP Client status change
-		{															 
+		{																 
 			//if(tcp_client_sta&(1<<7))my_printf("\r\nTCP Client Connected.");
 			//else my_printf("\r\nTCP Client Disconnected");
  			if(tcp_client_sta&(1<<6))	//Rx new data
 			{
-				ClinetRxCnt++;
 	//			my_printf("\r\n Get Server Packet No:%d",ClinetRxCnt);
     			//my_printf("\r\nTCP Client RX:%s\r\n",tcp_client_databuf);	//print out Rx data
 				tcp_client_sta&=~(1<<6);	//clear Rx data ready flag

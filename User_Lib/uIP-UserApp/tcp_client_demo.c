@@ -49,7 +49,7 @@ void tcp_client_demo_appcall(void)
 }
 
 //reconnet to server
-//server IP is set into 192.168.1.2, port = 1400
+//server IP is set into 192.168.1.2, port = 1800
 uint8_t serverip[4] ={192,168,1,2};
 void tcp_client_reconnect()
 {

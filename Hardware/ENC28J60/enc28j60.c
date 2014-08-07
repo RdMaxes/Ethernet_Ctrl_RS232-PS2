@@ -1,5 +1,5 @@
 #include "spi2.h"
-#include "timer6.h"
+#include "timer4.h"
 #include <stdio.h>
 #include "enc28j60.h"	  
 
@@ -40,7 +40,7 @@ static void ENC28J60_SPI2_Init(void)
  	GPIO_SetBits(GPIOB,GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15);
  	//RST pin
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
  	GPIO_SetBits(GPIOA,GPIO_Pin_1);
@@ -65,7 +65,7 @@ void ENC28J60_Reset(void)
  	 
 	ENC28J60_SPI2_Init(); //re-init SPI2
 	SPI2_SetSpeed(SPI_BaudRatePrescaler_4);	//9MHz
- 	TIM6_Init(1000,719);//setup a 100kHz clock for ENC28J60
+ 	TIM4_Init(1000,719);//setup a clock for ENC28J60
 	ENC28J60_RST_CLEAR(); //reset ENC28J60		
 	ENC28J60_delayms(10);	 
 	ENC28J60_RST_SET();	//finish reset			    
@@ -181,7 +181,7 @@ u8 ENC28J60_Init(u8* macaddr)
 	while(!(ENC28J60_Read(ESTAT)&ESTAT_CLKRDY)&&retry<500)	//wait until clock is stable
 	{
 		retry++;
-		ENC28J60_delayms(1);
+		ENC28J60_delayms(10);
 	};
 	if(retry>=500)return 1;//initialization failed
 	//set Rx buffer address with 8k capacity

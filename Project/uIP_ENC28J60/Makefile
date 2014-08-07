@@ -40,7 +40,7 @@ SRC+=	./main.c \
 		$(HARDWARE)/ENC28J60/enc28j60.c \
 		$(HARDWARE)/SN74CBT3306/sn74cbt3306.c \
 		$(PERIPHERAL)/spi2/spi2.c \
-		$(PERIPHERAL)/timer6/timer6.c \
+		$(PERIPHERAL)/timer4/timer4.c \
 		$(PERIPHERAL)/usart2/usart2.c \
 		$(USER_LIB)/myprintf/myprintf.c
 
@@ -67,7 +67,7 @@ CFLAGS_INCLUDE+=-I./ \
 		-I$(HARDWARE)/ENC28J60 \
 		-I$(HARDWARE)/SN74CBT3306 \
 		-I$(PERIPHERAL)/spi2 \
-		-I$(PERIPHERAL)/timer6 \
+		-I$(PERIPHERAL)/timer4 \
 		-I$(PERIPHERAL)/usart2 \
 		-I$(USER_LIB)/myprintf
 
