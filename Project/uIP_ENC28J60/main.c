@@ -163,6 +163,8 @@ int main(void)
 						uip_setnetmask(ipaddr);
 						my_printf("\r\nIP Mask Set:%d.%d.%d.%d",IP1,IP2,IP3,IP4);
 						break;
+					default:
+						break;
 					//Echo Command Lines		
 				}		
 			}
