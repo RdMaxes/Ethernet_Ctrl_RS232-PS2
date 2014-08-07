@@ -63,27 +63,27 @@ void tcp_client_aborted(void)
 {
 	tcp_client_sta&=~(1<<7);	//set flag with no link
 	tcp_client_reconnect();		//try to reconnet
-	uip_log((char*)"tcp_client aborted!\r\n");
+	//uip_log((char*)"tcp_client aborted!\r\n");
 }
 
 void tcp_client_timedout(void)
 {
 	tcp_client_sta&=~(1<<7);		   
-	uip_log((char*)"tcp_client timeout!\r\n");
+	//uip_log((char*)"tcp_client timeout!\r\n");
 }
 
 void tcp_client_closed(void)
 {
 	tcp_client_sta&=~(1<<7);	
 	tcp_client_reconnect();		
-	uip_log((char*)"tcp_client closed!\r\n");
+	//uip_log((char*)"tcp_client closed!\r\n");
 }	 
 
 void tcp_client_connected(void)
 { 
 	struct tcp_demo_appstate *s=(struct tcp_demo_appstate *)&uip_conn->appstate;
  	tcp_client_sta|=1<<7;		
-  	uip_log((char*)"tcp_client connected!\r\n");
+  	//uip_log((char*)"tcp_client connected!\r\n");
 	s->state=STATE_CMD; 		
 	s->textlen=0;
 	s->textptr=(uint8_t*)"Connet to RdMaxes Client!!\r\n";
@@ -94,7 +94,7 @@ void tcp_client_acked(void)
 {											    
 	struct tcp_demo_appstate *s=(struct tcp_demo_appstate *)&uip_conn->appstate;
 	s->textlen=0;
-	uip_log((char*)"tcp_client acked!\r\n");		 
+	//uip_log((char*)"tcp_client acked!\r\n");		 
 }
 
 void tcp_client_senddata(void)

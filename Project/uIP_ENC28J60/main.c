@@ -102,7 +102,7 @@ int main(void)
 
 	uip_listen(HTONS(1200));			//listen to port 1200, as TCP server
   	tcp_client_reconnect();	   		    //listem to remote port 1400, as client
-
+  	my_printf("\r\nHardware initialize finished");
 	Switch2ConnectMode();				//set to connect mode as default
 	while (1) 
 	{

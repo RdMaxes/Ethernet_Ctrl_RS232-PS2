@@ -13,7 +13,7 @@ GDB=arm-none-eabi-gdb
 #Stm32F10x Standard Libraries
 CMSIS=../../STM_Lib/CMSIS
 ST=../../STM_Lib/STM32F10x_StdPeriph_Driver
-STARTUP=../../STM_Lib/Startup/startup_stm32f10x_hd.s
+STARTUP=../../STM_Lib/Startup/startup_stm32f10x_md.s
 #Source Files
 SRC+=	./system_stm32f10x.c \
 		$(ST)/src/misc.c \
@@ -117,7 +117,7 @@ $(BIN_IMAGE):$(EXECUTABLE)
 	@$(OBJCOPY) -O binary $^ $@
 	@echo '    OBJCOPY $(BIN_IMAGE)'
 
-STARTUP_OBJ = startup_stm32f10x_hd.o
+STARTUP_OBJ = startup_stm32f10x_md.o
 
 $(STARTUP_OBJ): $(STARTUP)
 	@$(CC) $(CFLAGS) $^ -c $(STARTUP)

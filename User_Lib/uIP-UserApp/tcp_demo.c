@@ -24,7 +24,7 @@ void tcp_demo_appcall(void)
 	switch(uip_conn->rport)	//remote port mission, port:1800
 	{
 	    case HTONS(1800):
-			tcp_client_demo_appcall();
+		tcp_client_demo_appcall();
 	       break;
 	    default: 
 	       break;
@@ -34,7 +34,7 @@ void tcp_demo_appcall(void)
 void uip_log(char *m)
 {			    
 	//printf("uIP log:%s\r\n",m);
-	my_printf("uIP log:%s\r\n",m);
+	//my_printf("uIP log:%s\r\n",m);
 }
 
 
