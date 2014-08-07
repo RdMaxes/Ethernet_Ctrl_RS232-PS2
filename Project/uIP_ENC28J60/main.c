@@ -16,10 +16,12 @@
 
 void uip_polling(void);	//prototype of uIP check job
 uint8_t SerialDataCheck(void); //check serial data
+uint8_t ServerDataCheck(uint8_t* dataBuf); //check server local port data
 void Switch2ConnectMode(void); //mode switch
 void Switch2DisconnectMode(void);
 uint8_t GetIPv4Information(char* ptrBuf, uint8_t* ptrIP1,uint8_t* ptrIP2,uint8_t* ptrIP3,uint8_t* ptrIP4);
 uint8_t GetMonitorPortInformation(char* cmd_buf, uint16_t* monport);
+
 
 //General Command Lines
 uint8_t str_POFF[] = "POFF";
@@ -176,28 +178,40 @@ int main(void)
 		uip_polling();	//check uIP  mission every cycle
 		if(tcp_server_tsta!=tcp_server_sta)//TCP Server status change
 		{															 
-			//if(tcp_server_sta&(1<<7)) my_printf("\r\nTCP Server Connected.");
-			//else my_printf("\r\nTCP Server Disconnected");
  			if(tcp_server_sta&(1<<6))	//Rx new data
 			{
-    			my_printf("TCP Server RX:%s\r\n",tcp_server_databuf); //print out Rx data
+    			CMD = 0;
+    			CMD = ServerDataCheck(tcp_server_databuf);
+    			switch(CMD)
+    			{
+					case CMD_POFF:
+						//Switch2DisconnectMode(); delay(8000*10);
+						my_printf("\r\nFrom Client Command:POFF"); delay(8000*10);
+						break;
+					case CMD_PON:
+						my_printf("\r\nFrom Client Command:PON"); delay(8000*10);
+						//Switch2ConnectMode(); delay(8000*10);
+						break;
+					case CMD_PS:
+						my_printf("\r\nFrom Client Command:PS"); delay(8000*10);
+						//if(CONNECTION_STATUS==CONNECT_MODE)	my_printf("\r\nPON"); 
+						//else if(CONNECTION_STATUS==DISCONNECT_MODE)	my_printf("\r\nPOFF");
+						break;	
+					default:
+						break;
+    			}
 				tcp_server_sta&=~(1<<6);		//clear Rx data ready flag	
-				//echo back to remote PC directly
-				tcp_server_sta|=1<<5;
+
 			}
 			tcp_server_tsta=tcp_server_sta; //update current server status
 		}
 		if(tcp_client_tsta!=tcp_client_sta)//TCP Client status change
 		{																 
-			//if(tcp_client_sta&(1<<7))my_printf("\r\nTCP Client Connected.");
 			//else my_printf("\r\nTCP Client Disconnected");
  			if(tcp_client_sta&(1<<6))	//Rx new data
 			{
-	//			my_printf("\r\n Get Server Packet No:%d",ClinetRxCnt);
-    			//my_printf("\r\nTCP Client RX:%s\r\n",tcp_client_databuf);	//print out Rx data
 				tcp_client_sta&=~(1<<6);	//clear Rx data ready flag
-				//echo back to remote PC directly
-				tcp_client_sta|=1<<5;
+
 			}
 			tcp_client_tsta=tcp_client_sta;	//update current server status
 		}
@@ -328,6 +342,21 @@ void Switch2DisconnectMode(void)
 	PORT_DISCONNECT();	GREEN_OFF(); RED_ON();
 	CONNECTION_STATUS = DISCONNECT_MODE;
 	delay(8000*10);
+}
+//check data in local server port
+//return: CMD type
+uint8_t ServerDataCheck(uint8_t* dataBuf)
+{
+	uint8_t res = 0;
+
+	//find command
+	//General Command Lines
+	if(strncmp((const char *)str_POFF,(const char *)dataBuf,4)==0)	 res=CMD_POFF;
+	else if(strncmp((const char *)str_PON,(const char *)dataBuf,3)==0) res=CMD_PON;
+	else if(strncmp((const char *)str_PS,(const char *)dataBuf,2)==0)	 res=CMD_PS;
+	else return 0;
+
+	return res;
 }
 
 //check data in serial port
