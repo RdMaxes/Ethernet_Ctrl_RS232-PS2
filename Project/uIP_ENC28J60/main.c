@@ -185,17 +185,26 @@ int main(void)
     			switch(CMD)
     			{
 					case CMD_POFF:
-						//Switch2DisconnectMode(); delay(8000*10);
-						my_printf("\r\nFrom Client Command:POFF"); delay(8000*10);
+						Switch2DisconnectMode(); delay(8000*10);
+						my_sprintf((char*)tcp_server_databuf,"\r\nPOFF");
+						tcp_server_sta|=1<<5; //set tx data ready flag
 						break;
 					case CMD_PON:
-						my_printf("\r\nFrom Client Command:PON"); delay(8000*10);
-						//Switch2ConnectMode(); delay(8000*10);
+						Switch2ConnectMode(); delay(8000*10);
+						my_sprintf((char*)tcp_server_databuf,"\r\nPON");
+						tcp_server_sta|=1<<5; //set tx data ready flag
+	
 						break;
 					case CMD_PS:
-						my_printf("\r\nFrom Client Command:PS"); delay(8000*10);
-						//if(CONNECTION_STATUS==CONNECT_MODE)	my_printf("\r\nPON"); 
-						//else if(CONNECTION_STATUS==DISCONNECT_MODE)	my_printf("\r\nPOFF");
+						if(CONNECTION_STATUS==CONNECT_MODE) 
+						{
+							my_sprintf((char*)tcp_server_databuf,"\r\nPON");
+						}
+						else if(CONNECTION_STATUS==DISCONNECT_MODE)	
+						{
+							my_sprintf((char*)tcp_server_databuf,"\r\nPOFF");
+						}
+						tcp_server_sta|=1<<5; //set tx data ready flag
 						break;	
 					default:
 						break;
